@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from create_lmdb_dataset import createDataset
 
+IGNORE_CHARS = [' ', '	', '', '　']
 
 trains = {
     "casia": {
@@ -71,21 +72,13 @@ def process_dataset(dataset, kind='train'):
     with open(new_annotation_path, 'w') as f:
         for line in lines:
             index = line.index('|')
-            label = ''.join([c for c in line[index + 1:] if c not in [' ', '	', '']])
+            label = ''.join([c for c in line[index + 1:] if c not in IGNORE_CHARS])
             if '.png' in label:
                 continue
             new_line = line[:index] + '\t' + label
             f.write(new_line)
 
     createDataset(inputPath=root_dir, gtFile=new_annotation_path, outputPath='data/hw/{}/{}'.format(kind, dataset))
-
-
-# for dataset in trains.keys():
-#     # try:
-#         process_dataset(dataset, 'train')
-#         process_dataset(dataset, 'test')
-#     # except:
-#     #     continue
     
 
 def get_all_charset():
@@ -106,6 +99,12 @@ def get_all_charset():
     with open('./data/project_charset.txt', 'w', encoding='utf-8') as f:
         f.write(''.join(charset))
 
+    with open('./data/auto_dataloader/auto_generator_charset.txt', 'w', encoding='utf-8') as f:
+        for c in charset:
+            f.write(c)
+            f.write('\n')
+
+
 def get_charset_of_annotation_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
@@ -114,14 +113,13 @@ def get_charset_of_annotation_file(filepath):
     charset = set()
     for line in tqdm(lines):
         index = line.index('|')
-        label = ''.join([c for c in line[index + 1:] if c not in [' ', '	', '']])
+        label = ''.join([c for c in line[index + 1:] if c not in IGNORE_CHARS])
         if '.png' in label:
             continue
         charset = charset.union(set(label))
 
     return charset
 
-get_all_charset()
 
 def get_text_to_gen_invoice():
     data_dict = trains
@@ -135,10 +133,18 @@ def get_text_to_gen_invoice():
     with open('./data/auto_dataloader/text_to_gen.txt', 'w') as f:
         for line in lines:
             index = line.index('|')
-            label = ''.join([c for c in line[index + 1:] if c not in [' ', '	', '']])
+            label = ''.join([c for c in line[index + 1:] if c not in IGNORE_CHARS])
             if '.png' in label:
                 continue
             f.write(label)
 
 
-get_text_to_gen_invoice()
+# get_all_charset()
+# get_text_to_gen_invoice()
+
+for dataset in trains.keys():
+    # try:
+        process_dataset(dataset, 'train')
+        process_dataset(dataset, 'test')
+    # except:
+    #     continue
