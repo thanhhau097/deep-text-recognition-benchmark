@@ -8,22 +8,22 @@ from create_lmdb_dataset import createDataset
 
 
 trains = {
-    # "casia": {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/train_labels_all_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/'
-    # },
-    # 'iam': {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/train_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/'
-    # },
-    # 'scut': {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/SCUT-EPT_labels_train_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/'
-    # },
-    # 'ffg': {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/train_labels_all_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/'
-    # },
+    "casia": {
+        'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/train_labels_all_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/'
+    },
+    'iam': {
+        'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/train_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/'
+    },
+    'scut': {
+        'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/SCUT-EPT_labels_train_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/'
+    },
+    'ffg': {
+        'annotation_path': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/train_labels_all_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/'
+    },
     'invoice': {
         'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/Invoice_all/train_835_files/ocr_extraction/ocr_labels_checked.txt',
         'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/Invoice_all/train_835_files/ocr_extraction/'
@@ -32,22 +32,22 @@ trains = {
 
 
 tests = {
-    # "casia": {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/CASIA_Competition_labels_test.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/CASIA-Competition_textline/'
-    # },
-    # 'iam': {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/val_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/'
-    # },
-    # 'scut': {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/SCUT-EPT_labels_test_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/'
-    # },
-    # 'ffg': {
-    #     'annotation_path': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/val_labels_all_checked.txt',
-    #     'root_dir': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/'
-    # },
+    "casia": {
+        'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/CASIA_Competition_labels_test.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/CASIA/CASIA-Competition_textline/'
+    },
+    'iam': {
+        'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/val_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/IAM/lines_processed/'
+    },
+    'scut': {
+        'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/SCUT-EPT_labels_test_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/SCUT-EPT_Dataset/'
+    },
+    'ffg': {
+        'annotation_path': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/val_labels_all_checked.txt',
+        'root_dir': '/mnt/ai_filestore/data/flax/ForFFG/HW_Printed_fixform/'
+    },
     'invoice': {
         'annotation_path': '/mnt/ai_filestore/data/flax/HW_datasets/Invoice_all/test_338_files/ocr_extraction/ocr_labels_checked.txt',
         'root_dir': '/mnt/ai_filestore/data/flax/HW_datasets/Invoice_all/test_338_files/ocr_extraction/'
@@ -71,7 +71,7 @@ def process_dataset(dataset, kind='train'):
     with open(new_annotation_path, 'w') as f:
         for line in lines:
             index = line.index('|')
-            label = ''.join([c for c in line[index + 1:] if c != ' '])
+            label = ''.join([c for c in line[index + 1:] if c not in [' ', '	', '']])
             if '.png' in label:
                 continue
             new_line = line[:index] + '\t' + label
@@ -80,12 +80,12 @@ def process_dataset(dataset, kind='train'):
     createDataset(inputPath=root_dir, gtFile=new_annotation_path, outputPath='data/hw/{}/{}'.format(kind, dataset))
 
 
-for dataset in trains.keys():
-    # try:
-        process_dataset(dataset, 'train')
-        process_dataset(dataset, 'test')
-    # except:
-    #     continue
+# for dataset in trains.keys():
+#     # try:
+#         process_dataset(dataset, 'train')
+#         process_dataset(dataset, 'test')
+#     # except:
+#     #     continue
     
 
 def get_all_charset():
@@ -93,6 +93,11 @@ def get_all_charset():
     for dataset in trains.keys():
         charset = charset.union(get_charset_of_annotation_file(trains[dataset]['annotation_path']))
         charset = charset.union(get_charset_of_annotation_file(tests[dataset]['annotation_path']))
+
+    # with open('./data/auto_dataloader/text_to_gen.txt', 'r') as f:
+    #     lines = f.readlines()
+    #     for line in lines:
+    #         charset = charset.union(line.replace('\n', ''))
 
     print(charset)
     print(len(charset))
@@ -109,12 +114,14 @@ def get_charset_of_annotation_file(filepath):
     charset = set()
     for line in tqdm(lines):
         index = line.index('|')
-        label = line[index+1:]
+        label = ''.join([c for c in line[index + 1:] if c not in [' ', '	', '']])
+        if '.png' in label:
+            continue
         charset = charset.union(set(label))
 
     return charset
 
-# get_all_charset()
+get_all_charset()
 
 def get_text_to_gen_invoice():
     data_dict = trains
@@ -128,10 +135,10 @@ def get_text_to_gen_invoice():
     with open('./data/auto_dataloader/text_to_gen.txt', 'w') as f:
         for line in lines:
             index = line.index('|')
-            label = ''.join([c for c in line[index + 1:] if c != ' '])
+            label = ''.join([c for c in line[index + 1:] if c not in [' ', '	', '']])
             if '.png' in label:
                 continue
             f.write(label)
 
 
-# get_text_to_gen_invoice()
+get_text_to_gen_invoice()
