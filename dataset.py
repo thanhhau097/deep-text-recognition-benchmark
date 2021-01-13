@@ -153,10 +153,17 @@ class AutoGeneratorDataset(Dataset):
         return 10000
 
     def __getitem__(self, index):
-        image, _, label = next(self.batch_generator)[0]
+        image, label = self.loop_item()
         image = Image.fromarray(np.uint8(image)).convert('RGB')
 
         return image, label
+    
+    def loop_item(self):
+        try:
+            images, _, labels = next(self.batch_generator)
+            return images[0], labels[0]
+        except:
+            return self.loop_item()
 
 
 class LmdbDataset(Dataset):
