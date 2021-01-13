@@ -12,7 +12,7 @@ import torch.optim as optim
 import torch.utils.data
 import numpy as np
 
-from utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabelConverter, Averager
+from utils.utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabelConverter, Averager
 from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
 from model import Model
 from test import validation
@@ -256,6 +256,7 @@ if __name__ == '__main__':
     parser.add_argument('--imgH', type=int, default=32, help='the height of the input image')
     parser.add_argument('--imgW', type=int, default=100, help='the width of the input image')
     parser.add_argument('--rgb', action='store_true', help='use rgb input')
+    parser.add_argument('--character_file', type=str, help='path to character list', default=None)
     parser.add_argument('--character', type=str,
                         default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
     parser.add_argument('--sensitive', action='store_true', help='for sensitive character mode')
@@ -274,6 +275,10 @@ if __name__ == '__main__':
                         help='the number of output channel of Feature extractor')
     parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
 
+    # use auto generate dataloader
+    parser.add_argument('--use_auto_generate_dataloader', action='store_true', help='use auto generate data for current validate dataset')
+    parser.add_argument('--auto_generate_dataloader_config_path', type=str, help='path to auto generator config file', default='data/auto_dataloader/config_fly.yaml')
+    parser.add_argument('--auto_generate_dataloader_batch_size', type=int, default=16)
     opt = parser.parse_args()
 
     if not opt.exp_name:
@@ -284,6 +289,10 @@ if __name__ == '__main__':
     os.makedirs(f'./saved_models/{opt.exp_name}', exist_ok=True)
 
     """ vocab / character number configuration """
+    if opt.character_file is not None:
+        with open(opt.character_file, 'r') as f:
+            characters = f.readlines()[0].replace('\n', '')
+        opt.character = characters
     if opt.sensitive:
         # opt.character += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).

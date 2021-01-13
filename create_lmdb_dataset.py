@@ -44,39 +44,42 @@ def createDataset(inputPath, gtFile, outputPath, checkValid=True):
 
     nSamples = len(datalist)
     for i in range(nSamples):
-        imagePath, label = datalist[i].strip('\n').split('\t')
-        imagePath = os.path.join(inputPath, imagePath)
+        try:
+            imagePath, label = datalist[i].strip('\n').split('\t')
+            imagePath = os.path.join(inputPath, imagePath)
 
-        # # only use alphanumeric data
-        # if re.search('[^a-zA-Z0-9]', label):
-        #     continue
+            # # only use alphanumeric data
+            # if re.search('[^a-zA-Z0-9]', label):
+            #     continue
 
-        if not os.path.exists(imagePath):
-            print('%s does not exist' % imagePath)
-            continue
-        with open(imagePath, 'rb') as f:
-            imageBin = f.read()
-        if checkValid:
-            try:
-                if not checkImageIsValid(imageBin):
-                    print('%s is not a valid image' % imagePath)
-                    continue
-            except:
-                print('error occured', i)
-                with open(outputPath + '/error_image_log.txt', 'a') as log:
-                    log.write('%s-th image data occured error\n' % str(i))
+            if not os.path.exists(imagePath):
+                print('%s does not exist' % imagePath)
                 continue
+            with open(imagePath, 'rb') as f:
+                imageBin = f.read()
+            if checkValid:
+                try:
+                    if not checkImageIsValid(imageBin):
+                        print('%s is not a valid image' % imagePath)
+                        continue
+                except:
+                    print('error occured', i)
+                    with open(outputPath + '/error_image_log.txt', 'a') as log:
+                        log.write('%s-th image data occured error\n' % str(i))
+                    continue
 
-        imageKey = 'image-%09d'.encode() % cnt
-        labelKey = 'label-%09d'.encode() % cnt
-        cache[imageKey] = imageBin
-        cache[labelKey] = label.encode()
+            imageKey = 'image-%09d'.encode() % cnt
+            labelKey = 'label-%09d'.encode() % cnt
+            cache[imageKey] = imageBin
+            cache[labelKey] = label.encode()
 
-        if cnt % 1000 == 0:
-            writeCache(env, cache)
-            cache = {}
-            print('Written %d / %d' % (cnt, nSamples))
-        cnt += 1
+            if cnt % 1000 == 0:
+                writeCache(env, cache)
+                cache = {}
+                print('Written %d / %d' % (cnt, nSamples))
+            cnt += 1
+        except:
+            continue
     nSamples = cnt-1
     cache['num-samples'.encode()] = str(nSamples).encode()
     writeCache(env, cache)

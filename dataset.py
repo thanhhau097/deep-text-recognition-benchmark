@@ -13,6 +13,8 @@ from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
 import torchvision.transforms as transforms
 
+from utils.rec_img_aug import RecAug
+
 
 class Batch_Balanced_Dataset(object):
 
@@ -30,7 +32,7 @@ class Batch_Balanced_Dataset(object):
         log.write(f'dataset_root: {opt.train_data}\nopt.select_data: {opt.select_data}\nopt.batch_ratio: {opt.batch_ratio}\n')
         assert len(opt.select_data) == len(opt.batch_ratio)
 
-        _AlignCollate = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+        _AlignCollate = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, training=True)  # this collate is only used for training set, no worry
         self.data_loader_list = []
         self.dataloader_iter_list = []
         batch_size_list = []
@@ -57,6 +59,21 @@ class Batch_Balanced_Dataset(object):
             selected_d_log += f'num samples of {selected_d} per batch: {opt.batch_size} x {float(batch_ratio_d)} (batch_ratio) = {_batch_size}'
             print(selected_d_log)
             log.write(selected_d_log + '\n')
+            batch_size_list.append(str(_batch_size))
+            Total_batch_size += _batch_size
+
+            _data_loader = torch.utils.data.DataLoader(
+                _dataset, batch_size=_batch_size,
+                shuffle=True,
+                num_workers=int(opt.workers),
+                collate_fn=_AlignCollate, pin_memory=True)
+            self.data_loader_list.append(_data_loader)
+            self.dataloader_iter_list.append(iter(_data_loader))
+
+        # TODO: add auto generate dataloader
+        if opt.use_auto_generate_dataloader:
+            _dataset = AutoGeneratorDataset(opt.auto_generate_dataloader_config_path)
+            _batch_size = opt.auto_generate_dataloader_batch_size
             batch_size_list.append(str(_batch_size))
             Total_batch_size += _batch_size
 
@@ -126,6 +143,22 @@ def hierarchical_dataset(root, opt, select_data='/'):
     return concatenated_dataset, dataset_log
 
 
+class AutoGeneratorDataset(Dataset):
+    def __init__(self, config_path):
+        config = read_config(config_path)
+        config['batch_size'] = 1
+        self.batch_generator = create_data_generator(config)
+
+    def __len__(self):
+        return 10000
+
+    def __getitem__(self, index):
+        image, _, label = next(self.batch_generator)[0]
+        image = Image.fromarray(np.uint8(image)).convert('RGB')
+
+        return image, label
+
+
 class LmdbDataset(Dataset):
 
     def __init__(self, root, opt):
@@ -133,6 +166,7 @@ class LmdbDataset(Dataset):
         self.root = root
         self.opt = opt
         self.env = lmdb.open(root, max_readers=32, readonly=True, lock=False, readahead=False, meminit=False)
+        
         if not self.env:
             print('cannot create lmdb from %s' % (root))
             sys.exit(0)
@@ -168,8 +202,10 @@ class LmdbDataset(Dataset):
                     # By default, images containing characters which are not in opt.character are filtered.
                     # You can add [UNK] token to `opt.character` in utils.py instead of this filtering.
                     out_of_char = f'[^{self.opt.character}]'
-                    if re.search(out_of_char, label.lower()):
+                    if re.search(out_of_char, label): # if re.search(out_of_char, label.lower()):
+                        print(re.search(out_of_char, label), label)
                         continue
+                    # CURRENT ERROR: ignore some label with no reason
 
                     self.filtered_index_list.append(index)
 
@@ -206,8 +242,8 @@ class LmdbDataset(Dataset):
                     img = Image.new('L', (self.opt.imgW, self.opt.imgH))
                 label = '[dummy_label]'
 
-            if not self.opt.sensitive:
-                label = label.lower()
+            # if not self.opt.sensitive:  # TODO: update character list to comment out these 2 lines
+            #     label = label.lower()
 
             # We only train and evaluate on alphanumerics (or pre-defined character set in train.py)
             out_of_char = f'[^{self.opt.character}]'
@@ -287,12 +323,21 @@ class NormalizePAD(object):
         return Pad_img
 
 
+from dataloader.utils.misc import read_config
+from dataloader.generate.line import create_data_generator
+
+
 class AlignCollate(object):
 
-    def __init__(self, imgH=32, imgW=100, keep_ratio_with_pad=False):
+    def __init__(self, imgH=32, imgW=100, keep_ratio_with_pad=False, training=False):
+        """
+        generated_data_type: "hw", "printed", "mix", None
+        """
         self.imgH = imgH
         self.imgW = imgW
         self.keep_ratio_with_pad = keep_ratio_with_pad
+        self.training = training
+        self.aug = RecAug()
 
     def __call__(self, batch):
         batch = filter(lambda x: x is not None, batch)
@@ -312,6 +357,9 @@ class AlignCollate(object):
                 else:
                     resized_w = math.ceil(self.imgH * ratio)
 
+                if self.training:
+                    augment(self.aug, image)
+
                 resized_image = image.resize((resized_w, self.imgH), Image.BICUBIC)
                 resized_images.append(transform(resized_image))
                 # resized_image.save('./image_test/%d_test.jpg' % w)
@@ -319,11 +367,22 @@ class AlignCollate(object):
             image_tensors = torch.cat([t.unsqueeze(0) for t in resized_images], 0)
 
         else:
+            if self.training:
+                images = [augment(self.aug, image) for image in images]
             transform = ResizeNormalize((self.imgW, self.imgH))
             image_tensors = [transform(image) for image in images]
             image_tensors = torch.cat([t.unsqueeze(0) for t in image_tensors], 0)
 
         return image_tensors, labels
+
+
+def augment(aug_fn, image):
+    image = np.asarray(image, dtype=np.float32)
+    image = aug_fn(image)
+    image = Image.fromarray(np.uint8(image))
+    # import random
+    # image.save('./data/augmented_images/{}.png'.format(str(random.randint(1, 100000))))
+    return image
 
 
 def tensor2im(image_tensor, imtype=np.uint8):

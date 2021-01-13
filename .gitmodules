@@ -1,0 +1,3 @@
+[submodule "dataloader"]
+	path = dataloader
+	url = git@github.com:Cinnamon/dataloader.git

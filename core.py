@@ -10,7 +10,7 @@ import torch.utils.data
 import torch.nn.functional as F
 from PIL import Image
 
-from utils import CTCLabelConverter, AttnLabelConverter
+from utils.utils import CTCLabelConverter, AttnLabelConverter
 from dataset import RawDataset, AlignCollate
 from model import Model
 

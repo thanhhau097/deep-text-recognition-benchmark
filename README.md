@@ -1,3 +1,22 @@
+# TODO
+0. (optional) refactor code to make modules 
+1. add data augmentation: paddle ocr -> DONE
+2. add data generation: GAN algorithm/dataloader-john/other repo -> generate text line of current evaluate projects  -> DONE (need to improve the generating time)
+3. add beam search https://github.com/githubharald/CTCDecoder
+
+- how to train?
+
+using auto data generator:
+
+CUDA_VISIBLE_DEVICES=0 python train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data invoice --batch_ratio 1 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=32 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 --use_auto_generate_dataloader --auto_generate_dataloader_batch_size=16 --manualSeed=222
+
+normal:
+
+```
+CUDA_VISIBLE_DEVICES=1,2,3 python train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data casia-iam-scut-ffg-invoice --batch_ratio 0.2-0.2-0.2-0.2-0.2 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=128 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 (--saved_model=./pretrained_models/TPS-ResNet-BiLSTM-Attn.pth)
+```
+
+
 # What Is Wrong With Scene Text Recognition Model Comparisons? Dataset and Model Analysis
 | [paper](https://arxiv.org/abs/1904.01906) | [training and evaluation data](https://github.com/clovaai/deep-text-recognition-benchmark#download-lmdb-dataset-for-traininig-and-evaluation-from-here) | [failure cases and cleansed label](https://github.com/clovaai/deep-text-recognition-benchmark#download-failure-cases-and-cleansed-label-from-here) | [pretrained model](https://www.dropbox.com/sh/j3xmli4di1zuv3s/AAArdcPgz7UFxIHUuKNOeKv_a?dl=0) | [Baidu ver(passwd:rryk)](https://pan.baidu.com/s/1KSNLv4EY3zFWHpBYlpFCBQ) |
 
