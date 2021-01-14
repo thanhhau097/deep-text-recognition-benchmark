@@ -161,6 +161,8 @@ class AutoGeneratorDataset(Dataset):
     def loop_item(self):
         try:
             images, _, labels = next(self.batch_generator)
+            if len(labels[0]) > 50:
+                return self.loop_item()
             return images[0], labels[0]
         except:
             return self.loop_item()

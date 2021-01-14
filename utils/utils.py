@@ -1,3 +1,4 @@
+import jaconv
 import torch
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -167,3 +168,17 @@ class Averager(object):
         if self.n_count != 0:
             res = self.sum / float(self.n_count)
         return res
+
+
+def normalize_char(char):
+    # katakana: haft -> full width
+    if 0xff66 <= ord(char) <= 0xffef:
+        return jaconv.h2z(char)
+
+    # roman: -> latin
+    if 0xff00 <= ord(char) <= 0xff65:
+        return jaconv.z2h(char, kana=False, digit=True, ascii=True)
+    # kanji
+    # hiragana
+    return char
+    

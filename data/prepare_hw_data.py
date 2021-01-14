@@ -1,6 +1,7 @@
 import os
 import json
 import random
+from utils.utils import normalize_char
 
 from tqdm import tqdm
 
@@ -72,7 +73,7 @@ def process_dataset(dataset, kind='train'):
     with open(new_annotation_path, 'w') as f:
         for line in lines:
             index = line.index('|')
-            label = ''.join([c for c in line[index + 1:] if c not in IGNORE_CHARS])
+            label = ''.join([normalize_char(c) for c in line[index + 1:] if c not in IGNORE_CHARS])
             if '.png' in label:
                 continue
             new_line = line[:index] + '\t' + label
@@ -95,13 +96,13 @@ def get_all_charset():
     print(charset)
     print(len(charset))
 
-    charset = sorted(list(charset))
+    charset = [normalize_char(c) for c in sorted(list(charset))]
     with open('./data/project_charset.txt', 'w', encoding='utf-8') as f:
         f.write(''.join(charset))
 
     with open('./data/auto_dataloader/auto_generator_charset.txt', 'w', encoding='utf-8') as f:
         for c in charset:
-            f.write(c)
+            f.write(normalize_char(c))
             f.write('\n')
 
 
@@ -113,7 +114,7 @@ def get_charset_of_annotation_file(filepath):
     charset = set()
     for line in tqdm(lines):
         index = line.index('|')
-        label = ''.join([c for c in line[index + 1:] if c not in IGNORE_CHARS])
+        label = ''.join([normalize_char(c) for c in line[index + 1:] if c not in IGNORE_CHARS])
         if '.png' in label:
             continue
         charset = charset.union(set(label))
@@ -133,14 +134,14 @@ def get_text_to_gen_invoice():
     with open('./data/auto_dataloader/text_to_gen.txt', 'w') as f:
         for line in lines:
             index = line.index('|')
-            label = ''.join([c for c in line[index + 1:] if c not in IGNORE_CHARS])
+            label = ''.join([normalize_char(c) for c in line[index + 1:] if c not in IGNORE_CHARS])
             if '.png' in label:
                 continue
             f.write(label)
 
 
-# get_all_charset()
-# get_text_to_gen_invoice()
+get_all_charset()
+get_text_to_gen_invoice()
 
 for dataset in trains.keys():
     # try:

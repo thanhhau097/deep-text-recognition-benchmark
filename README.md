@@ -1,7 +1,9 @@
 # TODO
 0. (optional) refactor code to make modules 
 1. add data augmentation: paddle ocr -> DONE
-2. add data generation: GAN algorithm/dataloader-john/other repo -> generate text line of current evaluate projects  -> DONE (need to improve the generating time)
+2. add data generation: GAN algorithm/dataloader-john/other repo -> generate text line of current evaluate projects 
+    -> DONE dataloader-john (need to improve the generating time)
+    -> TODO: GAN
 3. add beam search https://github.com/githubharald/CTCDecoder
 
 - how to train?

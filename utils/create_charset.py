@@ -7,16 +7,32 @@
 # CJK unifed ideographs - Common and uncommon kanji ( 4e00 - 9faf)
 
 # import chr
-eng_ranges = [('0020', '007E')]
-ranges = eng_ranges + [('3000', '303f'), ('3040', '309f'), ('30a0', '30ff'), ('ff00', 'ffef'), ('4e00', '9faf')]
-count = 0
-chars = ''
-for start, end in ranges:
-    for i in range(int('0x' + end, 16) - int('0x' + start, 16) + 1):
-        chars += chr(i + int('0x' + start, 16))
-        count += 1
+# eng_ranges = [('0020', '007E')]
+# ranges = eng_ranges + [('3000', '303f'), ('3040', '309f'), ('30a0', '30ff'), ('ff00', 'ffef'), ('4e00', '9faf')]
+# count = 0
+# chars = ''
+# for start, end in ranges:
+#     for i in range(int('0x' + end, 16) - int('0x' + start, 16) + 1):
+#         chars += chr(i + int('0x' + start, 16))
+#         count += 1
 
-with open('charset.txt', 'w') as f:
-    f.write(chars)
+# with open('charset.txt', 'w') as f:
+#     f.write(chars)
 
-print('total:', count)
+# print('total:', count)
+
+import jaconv
+
+
+def normalize_char(char):
+    # katakana: haft -> full width
+    if 0xff66 <= ord(char) <= 0xffef:
+        return jaconv.h2z(char)
+
+    # roman: -> latin
+    if 0xff00 <= ord(char) <= 0xff65:
+        return jaconv.z2h(char, kana=False, digit=True, ascii=True)
+    # kanji
+    # hiragana
+    return char
+    
