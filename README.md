@@ -5,6 +5,10 @@
     -> DONE dataloader-john (need to improve the generating time)
     -> TODO: GAN
 3. add beam search https://github.com/githubharald/CTCDecoder
+4. add transformer head: 
+    - https://arxiv.org/pdf/1910.04396.pdf
+    - https://github.com/clovaai/deep-text-recognition-benchmark/issues?page=2&q=is%3Aissue+is%3Aopen 
+    - https://github.com/Media-Smart/vedastr/tree/master/vedastr/models/heads
 
 - how to train?
 
@@ -17,6 +21,12 @@ normal:
 ```
 CUDA_VISIBLE_DEVICES=1,2,3 python train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data casia-iam-scut-ffg-invoice --batch_ratio 0.2-0.2-0.2-0.2-0.2 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=128 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 (--saved_model=./pretrained_models/TPS-ResNet-BiLSTM-Attn.pth)
 ```
+
+# current result
+Validation set: Invoice
+    - Training from scratch: 77.131 (with auto data generator)
+    - General weights: 80.778 (without auto data generator)
+    - Finetune: (to be updated)
 
 
 # What Is Wrong With Scene Text Recognition Model Comparisons? Dataset and Model Analysis

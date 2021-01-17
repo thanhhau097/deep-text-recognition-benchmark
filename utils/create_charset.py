@@ -21,18 +21,3 @@
 
 # print('total:', count)
 
-import jaconv
-
-
-def normalize_char(char):
-    # katakana: haft -> full width
-    if 0xff66 <= ord(char) <= 0xffef:
-        return jaconv.h2z(char)
-
-    # roman: -> latin
-    if 0xff00 <= ord(char) <= 0xff65:
-        return jaconv.z2h(char, kana=False, digit=True, ascii=True)
-    # kanji
-    # hiragana
-    return char
-    
