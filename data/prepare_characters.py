@@ -1,0 +1,1 @@
+# this file uses model to cut the character images from textline image

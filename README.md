@@ -10,7 +10,10 @@
     - https://github.com/clovaai/deep-text-recognition-benchmark/issues?page=2&q=is%3Aissue+is%3Aopen 
     - https://github.com/Media-Smart/vedastr/tree/master/vedastr/models/heads
 
-- how to train?
+# what changes?
+- increase max number of images per chars in dataloader
+
+# how to train?
 
 using auto data generator:
 
