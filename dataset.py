@@ -14,6 +14,7 @@ from torch._utils import _accumulate
 import torchvision.transforms as transforms
 
 from utils.rec_img_aug import RecAug
+from utils.utils import normalize_char
 
 
 class Batch_Balanced_Dataset(object):
@@ -155,7 +156,7 @@ class AutoGeneratorDataset(Dataset):
     def __getitem__(self, index):
         image, label = self.loop_item()
         image = Image.fromarray(np.uint8(image)).convert('RGB')
-
+        label = [normalize_char(c) for c in label]
         return image, label
     
     def loop_item(self):
@@ -257,7 +258,8 @@ class LmdbDataset(Dataset):
             # We only train and evaluate on alphanumerics (or pre-defined character set in train.py)
             out_of_char = f'[^{self.opt.character}]'
             label = re.sub(out_of_char, '', label)
-
+            label = [normalize_char(c) for c in label]
+            
         return (img, label)
 
 
