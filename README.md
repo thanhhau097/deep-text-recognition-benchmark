@@ -17,12 +17,12 @@
 
 using auto data generator:
 
-CUDA_VISIBLE_DEVICES=0 python train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data invoice --batch_ratio 1 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=32 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 --use_auto_generate_dataloader --auto_generate_dataloader_batch_size=16 --manualSeed=222
+CUDA_VISIBLE_DEVICES=0 python lionelocr/train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data invoice --batch_ratio 1 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=32 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 --use_auto_generate_dataloader --auto_generate_dataloader_batch_size=16 --manualSeed=222
 
 normal:
 
 ```
-CUDA_VISIBLE_DEVICES=1,2,3 python train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data casia-iam-scut-ffg-invoice --batch_ratio 0.2-0.2-0.2-0.2-0.2 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=128 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 (--saved_model=./pretrained_models/TPS-ResNet-BiLSTM-Attn.pth)
+CUDA_VISIBLE_DEVICES=1,2,3 python lionelocr/train.py --train_data=./data/hw/train --valid_data=./data/hw/test/invoice --select_data casia-iam-scut-ffg-invoice --batch_ratio 0.2-0.2-0.2-0.2-0.2 --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=128 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 (--saved_model=./pretrained_models/TPS-ResNet-BiLSTM-Attn.pth)
 ```
 
 # current result
