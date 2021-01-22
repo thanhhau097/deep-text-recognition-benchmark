@@ -13,8 +13,11 @@ from torch.utils.data import Dataset, ConcatDataset, Subset
 from torch._utils import _accumulate
 import torchvision.transforms as transforms
 
-from utils.rec_img_aug import RecAug
-from utils.utils import normalize_char
+from lionelocr.utils.rec_img_aug import RecAug
+from lionelocr.utils.utils import normalize_char
+from dataloader.utils.misc import read_config
+from dataloader.generate.line import create_data_generator
+
 
 
 class Batch_Balanced_Dataset(object):
@@ -332,10 +335,6 @@ class NormalizePAD(object):
             Pad_img[:, :, w:] = img[:, :, w - 1].unsqueeze(2).expand(c, h, self.max_size[2] - w)
 
         return Pad_img
-
-
-from dataloader.utils.misc import read_config
-from dataloader.generate.line import create_data_generator
 
 
 class AlignCollate(object):
