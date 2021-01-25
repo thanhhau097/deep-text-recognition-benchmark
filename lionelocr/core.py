@@ -51,8 +51,9 @@ cudnn.deterministic = True
 opt.num_gpu = torch.cuda.device_count()
 
 
+# TODO: save all config to weights
 class OCRModel():
-    def __init__(self, weights_path, character_file, transformation='TPS', feature_extraction='ResNet', sequence_modeling='BiLSTM', prediction='Attn'):
+    def __init__(self, weights_path, character_file='./data/project_charset.txt', transformation='TPS', feature_extraction='ResNet', sequence_modeling='BiLSTM', prediction='Attn'):
         self.opt = opt
         self.opt.saved_model = weights_path
         self.opt.Transformation = transformation

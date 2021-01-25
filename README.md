@@ -27,8 +27,8 @@ CUDA_VISIBLE_DEVICES=1,2,3 python lionelocr/train.py --train_data=./data/hw/trai
 
 # current result
 Validation set: Invoice
-    - Training from scratch: 77.131 (with auto data generator)
-    - General weights: 80.778 (without auto data generator)
+    - Training from scratch: 77.863 (with auto data generator)
+    - General weights: 82.294 (with auto data generator)
     - Finetune: (to be updated)
 
 # how to get character images:

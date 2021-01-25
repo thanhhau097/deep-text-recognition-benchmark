@@ -279,6 +279,10 @@ if __name__ == '__main__':
     parser.add_argument('--use_auto_generate_dataloader', action='store_true', help='use auto generate data for current validate dataset')
     parser.add_argument('--auto_generate_dataloader_config_path', type=str, help='path to auto generator config file', default='data/auto_dataloader/config_fly.yaml')
     parser.add_argument('--auto_generate_dataloader_batch_size', type=int, default=16)
+    parser.add_argument('--auto_generate_dataloader_type', type=str, default='custom', help="custom/trdg")
+    parser.add_argument('--trdg_text_folder', type=str, default='', help="path to text folder to generate data if using trdg to generate data")
+    parser.add_argument('--trdg_background_type', type=int, default=0, help="0: gaussian, 3: image")
+    parser.add_argument('--trdg_background_image_dir', type=str, default='', help="path to background images folder")
     opt = parser.parse_args()
 
     if not opt.exp_name:
