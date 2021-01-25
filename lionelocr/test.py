@@ -253,6 +253,7 @@ if __name__ == '__main__':
     parser.add_argument('--imgH', type=int, default=32, help='the height of the input image')
     parser.add_argument('--imgW', type=int, default=100, help='the width of the input image')
     parser.add_argument('--rgb', action='store_true', help='use rgb input')
+    parser.add_argument('--character_file', type=str, help='path to character list', default=None)
     parser.add_argument('--character', type=str, default='0123456789abcdefghijklmnopqrstuvwxyz', help='character label')
     parser.add_argument('--sensitive', action='store_true', help='for sensitive character mode')
     parser.add_argument('--PAD', action='store_true', help='whether to keep ratio then pad for image resize')
@@ -272,6 +273,10 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     """ vocab / character number configuration """
+    if opt.character_file is not None:
+        with open(opt.character_file, 'r') as f:
+            characters = f.readlines()[0].replace('\n', '')
+        opt.character = characters
     if opt.sensitive:
         opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
 

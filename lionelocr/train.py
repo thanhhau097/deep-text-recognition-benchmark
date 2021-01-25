@@ -172,7 +172,7 @@ def train(opt):
         loss_avg.add(cost)
 
         # validation part
-        if (iteration + 1) % opt.valInterval == 0 or iteration == 0: # To see training progress, we also conduct validation when 'iteration == 0' 
+        if (iteration + 1) % opt.valInterval == 0:  # or iteration == 0: # To see training progress, we also conduct validation when 'iteration == 0' 
             elapsed_time = time.time() - start_time
             # for log
             with open(f'./saved_models/{opt.exp_name}/log_train.txt', 'a') as log:

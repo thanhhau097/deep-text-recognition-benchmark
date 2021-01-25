@@ -74,7 +74,7 @@ class Batch_Balanced_Dataset(object):
             self.data_loader_list.append(_data_loader)
             self.dataloader_iter_list.append(iter(_data_loader))
 
-        # TODO: add auto generate dataloader
+        # add auto generate dataloader
         if opt.use_auto_generate_dataloader:
             _dataset = TRDGAutoGeneratorDataset()
             # _dataset = AutoGeneratorDataset(opt.auto_generate_dataloader_config_path)
@@ -174,20 +174,20 @@ class AutoGeneratorDataset(Dataset):
             return self.loop_item()
 
 
+# TODO: update: generate by using background images: check code in TextRecognitionDataGenerator repo
 class TRDGAutoGeneratorDataset(Dataset):
     def __init__(self, text_folder='./data/auto_dataloader/texts'):
         self.generator = GeneratorFromTextFile(folder=text_folder, count=-1, size=40, language='en',
-                                               minimum_length=1, maximum_length=10,
+                                               minimum_length=1, maximum_length=50,
                                                skewing_angle=2, random_skew=True, blur=1, random_blur=True,
-                                               background_type=3, distorsion_type=-1, margins=(2, 2, 2, 2))
+                                               background_type=0, distorsion_type=-1, margins=(2, 2, 2, 2))
 
     def __len__(self):
         return 10000
 
     def __getitem__(self, index):
-        # TODO: debug here
         image, label = self.loop_item()
-        image = Image.fromarray(np.uint8(image)).convert('RGB')
+        image = image.convert('RGB')
         label = [normalize_char(c) for c in label]
         return image, label
 
