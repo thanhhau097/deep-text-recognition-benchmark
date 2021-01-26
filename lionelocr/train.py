@@ -82,16 +82,17 @@ def train(opt):
         print(f'loading pretrained model from {opt.saved_model}')
         # TODO: update to new weights dict, currently using this to adapt pretrained weights
         # from original repo
+        weights = torch.load(opt.saved_model)
         if opt.FT:
-            try:
-                model.load_state_dict(torch.load(opt.saved_model), strict=False)
-            except:
-                model.load_state_dict(torch.load(opt.saved_model)['state_dict'], strict=False)
+            if 'state_dict' not in weights:
+                model.load_state_dict(weights, strict=False)
+            else:
+                model.load_state_dict(weights['state_dict'], strict=False)
         else:
-            try:
-                model.load_state_dict(torch.load(opt.saved_model))
-            except:
-                model.load_state_dict(torch.load(opt.saved_model)['state_dict'])
+            if 'state_dict' not in weights:
+                model.load_state_dict(weights)
+            else:
+                model.load_state_dict(weights['state_dict'])
 
     print("Model:")
     print(model)
