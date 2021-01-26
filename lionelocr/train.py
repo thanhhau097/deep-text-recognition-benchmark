@@ -191,10 +191,12 @@ def train(opt):
                 # keep best accuracy model (on valid dataset)
                 if current_accuracy > best_accuracy:
                     best_accuracy = current_accuracy
-                    torch.save(model.state_dict(), f'./saved_models/{opt.exp_name}/best_accuracy.pth')
+                    # torch.save(model.state_dict(), f'./saved_models/{opt.exp_name}/best_accuracy.pth')
+                    save_model(f'./saved_models/{opt.exp_name}/best_accuracy.pth', model.state_dict(), opt)
                 if current_norm_ED > best_norm_ED:
                     best_norm_ED = current_norm_ED
-                    torch.save(model.state_dict(), f'./saved_models/{opt.exp_name}/best_norm_ED.pth')
+                    # torch.save(model.state_dict(), f'./saved_models/{opt.exp_name}/best_norm_ED.pth')
+                    save_model(f'./saved_models/{opt.exp_name}/best_norm_ED.pth', model.state_dict(), opt)
                 best_model_log = f'{"Best_accuracy":17s}: {best_accuracy:0.3f}, {"Best_norm_ED":17s}: {best_norm_ED:0.2f}'
 
                 loss_model_log = f'{loss_log}\n{current_model_log}\n{best_model_log}'
@@ -217,13 +219,36 @@ def train(opt):
 
         # save model per 1e+5 iter.
         if (iteration + 1) % 1e+5 == 0:
-            torch.save(
-                model.state_dict(), f'./saved_models/{opt.exp_name}/iter_{iteration+1}.pth')
+            save_model(f'./saved_models/{opt.exp_name}/iter_{iteration+1}.pth', model.state_dict(), opt)
 
         if (iteration + 1) == opt.num_iter:
             print('end the training')
             sys.exit()
         iteration += 1
+
+
+def save_model(path, state_dict, opt):
+    save_dict = {
+        'state_dict': state_dict,
+        'batch_max_length': opt.batch_max_length,
+        'imgH': opt.imgH, 
+        'imgW': opt.imgW,
+        'rgb': opt.rgb,
+        'character': opt.character,
+        'PAD': opt.PAD,
+        'data_filtering_off': opt.data_filtering_off,
+        'baiduCTC': opt.baiduCTC,
+        'Transformation': opt.Transformation,
+        'FeatureExtraction': opt.FeatureExtraction,
+        'SequenceModeling': opt.SequenceModeling,
+        'Prediction': opt.Prediction,
+        'num_fiducial': opt.num_fiducial,
+        'input_channel': opt.input_channel,
+        'output_channel': opt.output_channel,
+        'hidden_size': opt.hidden_size,
+    }
+
+    torch.save(save_dict, path)
 
 
 if __name__ == '__main__':
