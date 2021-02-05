@@ -69,7 +69,7 @@ class OCRModel():
                 image = Image.open(input_image).convert('RGB')  # for color image
             else:
                 image = Image.open(input_image).convert('L')
-        elif type(input_image) == np.array:
+        elif type(input_image) == np.ndarray:
             image = Image.fromarray(input_image)
         else:
             raise ValueError('Only accept image path or numpy array as input')
