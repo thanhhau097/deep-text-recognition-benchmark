@@ -15,9 +15,12 @@ import torchvision.transforms as transforms
 
 from lionelocr.utils.rec_img_aug import RecAug
 from lionelocr.utils.utils import normalize_char
-from dataloader.utils.misc import read_config
-from dataloader.generate.line import create_data_generator
-from trdg.generators import GeneratorFromTextFile
+try:
+    from dataloader.utils.misc import read_config
+    from dataloader.generate.line import create_data_generator
+    from trdg.generators import GeneratorFromTextFile
+except:
+    print('Can not import auto dataloader modules')
 
 
 class Batch_Balanced_Dataset(object):

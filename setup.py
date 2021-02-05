@@ -1,5 +1,7 @@
 from setuptools import setup
 from io import open
+from setuptools import find_packages
+
 
 with open('requirements.txt', encoding="utf-8-sig") as f:
     requirements = f.readlines()
@@ -14,8 +16,8 @@ def readme():
 
 setup(
     name='lionelocr',
-    packages=['lionelocr'],
-    package_dir={'lionelocr': ''},
+    packages=find_packages(),
+    #package_dir={'lionelocr': ''},
     include_package_data=True,
     # entry_points={"console_scripts": ["paddleocr= paddleocr.paddleocr:main"]},
     version='0.0.1',
