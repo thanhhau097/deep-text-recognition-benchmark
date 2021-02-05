@@ -110,8 +110,8 @@ class OCRModel():
         # calculate confidence score (= multiply of pred_max_prob)
         confidence_score = pred_max_prob.cumprod(dim=0)[-1]
 
-        print('predict:', pred)
-        print('confidence_score:', confidence_score)
+        # print('predict:', pred)
+        # print('confidence_score:', confidence_score)
         return pred, confidence_score
 
 
