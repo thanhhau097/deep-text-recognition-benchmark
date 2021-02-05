@@ -9,6 +9,7 @@ import torch.backends.cudnn as cudnn
 import torch.utils.data
 import torch.nn.functional as F
 from PIL import Image
+import numpy as np
 
 from lionelocr.utils.utils import CTCLabelConverter, AttnLabelConverter
 from lionelocr.dataset import RawDataset, AlignCollate
@@ -61,11 +62,17 @@ class OCRModel():
         self.model.load_state_dict(weights_dict['state_dict'])
         self.model.eval()
 
-    def process(self, image_path):
-        if self.opt.rgb:
-            image = Image.open(image_path).convert('RGB')  # for color image
+    def process(self, input_image):
+        # use both string and numpy array as input
+        if type(input_image) == str:
+            if self.opt.rgb:
+                image = Image.open(input_image).convert('RGB')  # for color image
+            else:
+                image = Image.open(input_image).convert('L')
+        elif type(input_image) == np.array:
+            image = Image.fromarray(input_image)
         else:
-            image = Image.open(image_path).convert('L')
+            raise ValueError('Only accept image path or numpy array as input')
 
         image_tensors, _ = self.align_collate([(image, '')])
         image_tensors = image_tensors.to(device)
