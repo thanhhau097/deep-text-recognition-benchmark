@@ -18,9 +18,9 @@ from lionelocr.model import Model
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
-parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
-parser.add_argument('--saved_model', help="path to saved_model to evaluation")
+# parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
+# parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
+# parser.add_argument('--saved_model', help="path to saved_model to evaluation")
 # """ Data processing """
 # parser.add_argument('--batch_max_length', type=int, default=25, help='maximum-label-length')
 # parser.add_argument('--imgH', type=int, default=32, help='the height of the input image')
@@ -40,8 +40,8 @@ parser.add_argument('--saved_model', help="path to saved_model to evaluation")
 #                     help='the number of output channel of Feature extractor')
 # parser.add_argument('--hidden_size', type=int, default=256, help='the size of the LSTM hidden state')
 
-opt = parser.parse_args()
-
+# opt = parser.parse_args()
+opt = parser.parse_known_args()[0]
 # """ vocab / character number configuration """
 # if opt.sensitive:
 #     opt.character = string.printable[:-6]  # same with ASTER setting (use 94 char).
