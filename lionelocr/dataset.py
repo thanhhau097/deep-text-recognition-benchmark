@@ -339,6 +339,117 @@ class RawDataset(Dataset):
         return (img, self.image_path_list[index])
 
 
+class StandardDataset(Dataset):
+    def __init__(self, root, annotation_files, opt):
+        self.root = root
+        self.opt = opt
+        if type(annotation_files) == str:
+            annotation_files = [annotation_files]
+        elif type(annotation_files) not in (list, set, tuple):
+            raise ValueError("Error: Only support one or more annotation files. Type: str, list, set, tuple")
+        
+        self.image_paths, self.labels = self.read_data(annotation_files)
+
+    def read_data(self, annotation_files):
+        image_paths = []
+        labels = []
+
+        for file in annotation_files:
+            with open(file, 'r') as f:
+                lines = f.readlines()
+
+            for line in lines:
+                line = line.replace('\n', '')
+                image_paths.append(line.split('\t')[0])
+                labels.append(line.split('\t')[1])
+
+        return image_paths, labels
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, index):
+        try:
+            if self.opt.rgb:
+                img = Image.open(os.path.join(self.root, self.image_paths[index])).convert('RGB')  # for color image
+            else:
+                img = Image.open(self.image_paths[index]).convert('L')
+
+            label = self.labels[index]
+
+        except IOError:
+            print(f'Corrupted image for {index}')
+            # make dummy image and dummy label for corrupted image.
+            if self.opt.rgb:
+                img = Image.new('RGB', (self.opt.imgW, self.opt.imgH))
+            else:
+                img = Image.new('L', (self.opt.imgW, self.opt.imgH))
+            
+            label = ''
+
+        return img, label
+
+
+class OCRDataset(object):
+    def __init__(self, root, annotation_files, opt, training):
+        collate_fn = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, training=training)  # this collate is only used for training set, no worry
+        standard_dataset = StandardDataset(root, annotation_files, opt)
+        self.standard_dataloader = torch.utils.data.DataLoader(
+            standard_dataset,
+            batch_size=opt.batch_size,
+            shuffle=True,
+            num_workers=int(opt.workers),
+            collate_fn=collate_fn, pin_memory=True)
+        
+        self.data_loader_list = [self.standard_dataloader]
+        self.dataloader_iter_list = [iter(self.standard_dataloader)]
+        
+        if opt.use_auto_generate_dataloader:
+            _AlignCollate_auto_generator = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD, training=False) # training = False to ignore augmentation
+            # change the choice of auto generator dataset here
+            if opt.auto_generate_dataloader_type == 'trdg':
+                _dataset = TRDGAutoGeneratorDataset(text_folder=opt.trdg_text_folder, background_type=opt.trdg_background_type, background_image_dir=opt.trdg_background_image_dir)
+            else:
+                _dataset = AutoGeneratorDataset(opt.auto_generate_dataloader_config_path)
+            _batch_size = opt.auto_generate_dataloader_batch_size
+
+            _data_loader = torch.utils.data.DataLoader(
+                _dataset, batch_size=_batch_size,
+                shuffle=True,
+                num_workers=int(opt.workers),
+                collate_fn=_AlignCollate_auto_generator, pin_memory=True)
+
+            self.data_loader_list.append(_data_loader)
+            self.dataloader_iter_list.append(iter(_data_loader))
+
+            print('TOTAL BATCH_SIZE = {} + {} = {}'.format(opt.batch_size, 
+                opt.auto_generate_dataloader_batch_size,
+                opt.batch_size + opt.auto_generate_dataloader_batch_size))
+        else:
+             print('TOTAL BATCH_SIZE = {}'.format(opt.batch_size))
+
+    def get_batch(self):
+        batch_images = []
+        batch_texts = []
+
+        for i, data_loader_iter in enumerate(self.dataloader_iter_list):
+            try:
+                image, text = data_loader_iter.next()
+                batch_images.append(image)
+                batch_texts += text
+            except StopIteration:
+                self.dataloader_iter_list[i] = iter(self.data_loader_list[i])
+                image, text = self.dataloader_iter_list[i].next()
+                batch_images.append(image)
+                batch_texts += text
+            except ValueError:
+                pass
+
+        batch_images = torch.cat(batch_images, 0)
+
+        return batch_images, batch_texts
+
+
 class ResizeNormalize(object):
 
     def __init__(self, size, interpolation=Image.BICUBIC):

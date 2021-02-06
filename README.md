@@ -10,11 +10,16 @@
     - https://github.com/clovaai/deep-text-recognition-benchmark/issues?page=2&q=is%3Aissue+is%3Aopen 
     - https://github.com/Media-Smart/vedastr/tree/master/vedastr/models/heads
 5. add Dockerfile
+6. add hybrid ctc-attention-lm: https://github.com/Alexander-H-Liu/End-to-end-ASR-Pytorch/blob/master/src/asr.py
 
 # what changes?
 - increase max number of images per chars in dataloader
 
 # how to train?
+new dataset
+```
+CUDA_VISIBLE_DEVICES=1 python lionelocr/train.py --train_root=./data/ --train_annotation_paths=./data/train_cellcuts.txt --val_root=./data/ --val_annotation_paths=./data/val_cellcuts.txt --Transformation TPS --FeatureExtraction ResNet --SequenceModeling BiLSTM --Prediction Attn --num_iter=3000000 --valInterval=100 --batch_size=32 --rgb --character_file=./data/project_charset.txt --batch_max_length=50 --use_auto_generate_dataloader --auto_generate_dataloader_batch_size=16 --manualSeed=222
+```
 
 using auto data generator:
 

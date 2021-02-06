@@ -13,7 +13,7 @@ import torch.utils.data
 import numpy as np
 
 from utils.utils import CTCLabelConverter, CTCLabelConverterForBaiduWarpctc, AttnLabelConverter, Averager
-from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset
+from dataset import hierarchical_dataset, AlignCollate, Batch_Balanced_Dataset, OCRDataset, StandardDataset
 from model import Model
 from test import validation
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -26,19 +26,32 @@ def train(opt):
         print('Filtering the images whose label is longer than opt.batch_max_length')
         # see https://github.com/clovaai/deep-text-recognition-benchmark/blob/6593928855fb7abb999a99f428b3e4477d4ae356/dataset.py#L130
 
-    opt.select_data = opt.select_data.split('-')
-    opt.batch_ratio = opt.batch_ratio.split('-')
-    train_dataset = Batch_Balanced_Dataset(opt)
+    # opt.select_data = opt.select_data.split('-')
+    # opt.batch_ratio = opt.batch_ratio.split('-')
+    # train_dataset = Batch_Balanced_Dataset(opt)
 
     log = open(f'./saved_models/{opt.exp_name}/log_dataset.txt', 'a')
+    # AlignCollate_valid = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+    # valid_dataset, valid_dataset_log = hierarchical_dataset(root=opt.valid_data, opt=opt)
+    # valid_loader = torch.utils.data.DataLoader(
+    #     valid_dataset, batch_size=opt.batch_size,
+    #     shuffle=True,  # 'True' to check training progress with validation function.
+    #     num_workers=int(opt.workers),
+    #     collate_fn=AlignCollate_valid, pin_memory=True)
+    # log.write(valid_dataset_log)
+
+    opt.train_annotation_paths = opt.train_annotation_paths.split(',')
+    train_dataset = OCRDataset(opt.train_root, opt.train_annotation_paths, opt, training=True)
+
+    opt.val_annotation_paths = opt.val_annotation_paths.split(',')
+    valid_dataset = StandardDataset(opt.val_root, opt.val_annotation_paths, opt)
     AlignCollate_valid = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
-    valid_dataset, valid_dataset_log = hierarchical_dataset(root=opt.valid_data, opt=opt)
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset, batch_size=opt.batch_size,
         shuffle=True,  # 'True' to check training progress with validation function.
         num_workers=int(opt.workers),
         collate_fn=AlignCollate_valid, pin_memory=True)
-    log.write(valid_dataset_log)
+    
     print('-' * 80)
     log.write('-' * 80 + '\n')
     log.close()
@@ -264,8 +277,8 @@ def save_model(path, state_dict, opt):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp_name', help='Where to store logs and models')
-    parser.add_argument('--train_data', required=True, help='path to training dataset')
-    parser.add_argument('--valid_data', required=True, help='path to validation dataset')
+    parser.add_argument('--train_data', help='path to training dataset')
+    parser.add_argument('--valid_data', help='path to validation dataset')
     parser.add_argument('--manualSeed', type=int, default=1111, help='for random seed setting')
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
     parser.add_argument('--batch_size', type=int, default=192, help='input batch size')
@@ -281,6 +294,10 @@ if __name__ == '__main__':
     parser.add_argument('--grad_clip', type=float, default=5, help='gradient clipping value. default=5')
     parser.add_argument('--baiduCTC', action='store_true', help='for data_filtering_off mode')
     """ Data processing """
+    parser.add_argument('--train_root', type=str, help='path to training data root folder')
+    parser.add_argument('--train_annotation_paths', type=str, help='paths to all training annotation paths, separated by comma')
+    parser.add_argument('--val_root', type=str, help='path to validation data root folder')
+    parser.add_argument('--val_annotation_paths', type=str, help='paths to all validation annotation paths, separated by comma')
     parser.add_argument('--select_data', type=str, default='MJ-ST',
                         help='select training data (default is MJ-ST, which means MJ and ST used as training data)')
     parser.add_argument('--batch_ratio', type=str, default='0.5-0.5',
