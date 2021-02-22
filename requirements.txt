@@ -2,3 +2,7 @@ imgaug==0.2.9
 torch
 torchvision
 numpy
+jaconv
+lmdb
+natsort
+nltk

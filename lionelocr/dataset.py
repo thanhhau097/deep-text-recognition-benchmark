@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import re
@@ -356,12 +357,10 @@ class StandardDataset(Dataset):
 
         for file in annotation_files:
             with open(file, 'r') as f:
-                lines = f.readlines()
+                data = json.load(f)
 
-            for line in lines:
-                line = line.replace('\n', '')
-                image_paths.append(line.split('\t')[0])
-                labels.append(line.split('\t')[1])
+            image_paths = list(data.keys())
+            labels = list(data.values())
 
         return image_paths, labels
 
