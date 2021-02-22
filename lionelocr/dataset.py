@@ -4,6 +4,8 @@ import sys
 import re
 import six
 import math
+
+import random
 import lmdb
 import torch
 
@@ -386,6 +388,8 @@ class StandardDataset(Dataset):
             
             label = ''
 
+        if len(label) > 50:
+            return self.__getitem__(random.randint(0, len(self.image_paths) - 1))
         return img, label
 
 
