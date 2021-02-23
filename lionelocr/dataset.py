@@ -388,9 +388,9 @@ class StandardDataset(Dataset):
             
             label = ''
 
-        if len(label) > 50:
+        if len(str(label)) > 50:
             return self.__getitem__(random.randint(0, len(self.image_paths) - 1))
-        return img, label
+        return img, str(label)
 
 
 class OCRDataset(object):
@@ -440,15 +440,17 @@ class OCRDataset(object):
                 image, text = data_loader_iter.next()
                 batch_images.append(image)
                 batch_texts += text
-            except StopIteration:
+            except: # StopIteration:
                 self.dataloader_iter_list[i] = iter(self.data_loader_list[i])
                 image, text = self.dataloader_iter_list[i].next()
                 batch_images.append(image)
                 batch_texts += text
-            except ValueError:
-                pass
-
-        batch_images = torch.cat(batch_images, 0)
+            # except ValueError:
+            #     pass
+        try: # when we have ValueError: TODO: checkout what is happenning here
+            batch_images = torch.cat(batch_images, 0)
+        except:
+            return self.get_batch()
 
         return batch_images, batch_texts
 

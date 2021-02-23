@@ -194,6 +194,16 @@ def train(opt):
 
         loss_avg.add(cost)
 
+        # ignore this part if we need validation
+        if (iteration + 1) % 100 == 0:
+            print("Iter {}: Mean training loss =".format(iteration + 1), loss_avg.val().item())
+            with open(f'./saved_models/{opt.exp_name}/log_train.txt', 'a') as log:
+                log.write("Iter {}: Mean training loss = ".format(iteration + 1) + str(loss_avg.val().item()) + '\n')
+            loss_avg.reset()
+
+        if (iteration + 1) % 10000 == 0:
+            save_model(f'./saved_models/{opt.exp_name}/lastest.pth', model.state_dict(), opt)
+
         # validation part
         if (iteration + 1) % opt.valInterval == 0:  # or iteration == 0: # To see training progress, we also conduct validation when 'iteration == 0' 
             elapsed_time = time.time() - start_time
