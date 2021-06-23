@@ -1,5 +1,3 @@
-# this file is use to process data
-
 import string
 import argparse
 
@@ -17,16 +15,16 @@ from lionelocr.model import Model
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-parser = argparse.ArgumentParser()
-opt = parser.parse_known_args()[0]
 
-cudnn.benchmark = True
-cudnn.deterministic = True
-opt.num_gpu = torch.cuda.device_count()
 
 
 class OCRModel():
     def __init__(self, weights_path):
+        parser = argparse.ArgumentParser()
+        opt = parser.parse_known_args()[0]
+        cudnn.benchmark = True
+        cudnn.deterministic = True
+        opt.num_gpu = torch.cuda.device_count()
         self.opt = opt
 
         # load value for opt
@@ -48,12 +46,12 @@ class OCRModel():
         self.opt.output_channel = weights_dict['output_channel']
         self.opt.hidden_size = weights_dict['hidden_size']
 
-        self.align_collate = AlignCollate(imgH=opt.imgH, imgW=opt.imgW, keep_ratio_with_pad=opt.PAD)
+        self.align_collate = AlignCollate(imgH=self.opt.imgH, imgW=self.opt.imgW, keep_ratio_with_pad=self.opt.PAD)
 
-        if 'CTC' in opt.Prediction:
-            self.converter = CTCLabelConverter(opt.character)
+        if 'CTC' in self.opt.Prediction:
+            self.converter = CTCLabelConverter(self.opt.character)
         else:
-            self.converter = AttnLabelConverter(opt.character)
+            self.converter = AttnLabelConverter(self.opt.character)
 
         self.opt.num_class = len(self.converter.character)
 
@@ -78,10 +76,10 @@ class OCRModel():
         image_tensors = image_tensors.to(device)
         batch_size = image_tensors.size(0)
 
-        length_for_pred = torch.IntTensor([opt.batch_max_length] * batch_size).to(device)
-        text_for_pred = torch.LongTensor(batch_size, opt.batch_max_length + 1).fill_(0).to(device)
+        length_for_pred = torch.IntTensor([self.opt.batch_max_length] * batch_size).to(device)
+        text_for_pred = torch.LongTensor(batch_size, self.opt.batch_max_length + 1).fill_(0).to(device)
 
-        if 'CTC' in opt.Prediction:
+        if 'CTC' in self.opt.Prediction:
             preds = self.model(image_tensors, text_for_pred)
 
             # Select max probabilty (greedy decoding) then decode index to character
@@ -102,19 +100,20 @@ class OCRModel():
 
         pred_max_prob = preds_max_prob[0]
         pred = preds_str[0]
-        if 'Attn' in opt.Prediction:
+        if 'Attn' in self.opt.Prediction:
             pred_EOS = pred.find('[s]')
             pred = pred[:pred_EOS]  # prune after "end of sentence" token ([s])
             pred_max_prob = pred_max_prob[:pred_EOS]
 
         # calculate confidence score (= multiply of pred_max_prob)
-        confidence_score = pred_max_prob.cumprod(dim=0)[-1]
+        try:
+            confidence_score = pred_max_prob.cumprod(dim=0)[-1]
+        except: 
+            confidence_score = torch.tensor(0)
 
         # print('predict:', pred)
         # print('confidence_score:', confidence_score)
         return pred, confidence_score
 
 
-if __name__ == "__main__":
-    ocr = OCRModel(weights_path='./saved_models/TPS-ResNet-BiLSTM-Attn-Seed1111/best_accuracy.pth')
-    ocr.process(image_path='./data/cellcuts/IMG_20201228_183149_037.png')
+
